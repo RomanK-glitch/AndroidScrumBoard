@@ -11,5 +11,5 @@ interface UserPost {
     fun loginUser(@Body user: User): Call<User>
 
     @POST("register.php")
-    fun postUser(@Body user: User): Call<User>
+    fun registerUser(@Body user: User): Call<User>
 }

@@ -1,14 +1,19 @@
 package com.roman.androidscrumboard.ui.register
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.roman.androidscrumboard.UserPost
 import com.roman.androidscrumboard.extentions.default
 import com.roman.androidscrumboard.extentions.set
 import com.roman.androidscrumboard.models.User
+import com.roman.androidscrumboard.models.UserLocalStore
 import retrofit2.*
 import retrofit2.converter.gson.GsonConverterFactory
 
-class RegisterViewModel {
+class RegisterViewModel(application: Application): AndroidViewModel(application) {
+
+    val userLocalStore = UserLocalStore(getApplication())
     val state = MutableLiveData<RegisterState>().default(initialValue = RegisterState.DefaultState())
 
     fun register(userName: String, eMail: String, password: String, repPassword: String) {
@@ -38,13 +43,14 @@ class RegisterViewModel {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
             val userPost: UserPost = retrofit.create(UserPost::class.java)
-            val call: Call<User> = userPost.postUser(user)
+            val call: Call<User> = userPost.registerUser(user)
             call.enqueue(object: Callback<User> {
                 override fun onFailure(call: Call<User>, t: Throwable) {
                     state.set(newValue = RegisterState.ErrorState("This name already taken"))
                 }
 
                 override fun onResponse(call: Call<User>, response: Response<User>) {
+                    userLocalStore.storeUserData(response.body()!!)
                     state.set(newValue = RegisterState.SuccessState(response.body()))
                 }
             })

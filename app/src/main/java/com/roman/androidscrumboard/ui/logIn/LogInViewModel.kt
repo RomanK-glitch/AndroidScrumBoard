@@ -1,21 +1,35 @@
 package com.roman.androidscrumboard.ui.logIn
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.roman.androidscrumboard.UserPost
 import com.roman.androidscrumboard.extentions.default
 import com.roman.androidscrumboard.extentions.set
 import com.roman.androidscrumboard.models.User
+import com.roman.androidscrumboard.models.UserLocalStore
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class LogInViewModel {
+class LogInViewModel(application: Application): AndroidViewModel(application) {
+
+    private val userLocalStore = UserLocalStore(getApplication())
     var state = MutableLiveData<LogInState>().default(initialValue = LogInState.DefaultState())
-    //if user logged in state is success
+
+    fun loggedIn(){
+        if (userLocalStore.isUserLoggedIn()){
+            state.set(newValue = LogInState.SuccessState(userLocalStore.getLoggedInUser()))
+        }
+    }
 
     fun logIn(userName: String, password: String) {
+        if (userLocalStore.isUserLoggedIn()) {
+            state.set(newValue = LogInState.SuccessState(userLocalStore.getLoggedInUser()))
+            return
+        }
         if (!validateUserName(userName)) {
             state.set(newValue = LogInState.ErrorState("User name field is not filled"))
             return
@@ -41,6 +55,7 @@ class LogInViewModel {
                 }
 
                 override fun onResponse(call: Call<User>, response: Response<User>) {
+                    userLocalStore.storeUserData(response.body()!!)
                     state.set(newValue = LogInState.SuccessState(response.body()))
                 }
             })

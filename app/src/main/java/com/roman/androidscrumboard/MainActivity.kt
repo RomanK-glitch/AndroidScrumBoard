@@ -1,9 +1,6 @@
 package com.roman.androidscrumboard
 
-import android.content.Intent
 import android.os.Bundle
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -14,8 +11,11 @@ import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.view.Menu
-import com.roman.androidscrumboard.ui.logIn.LogInActivity
-import com.roman.androidscrumboard.ui.register.RegisterActivity
+import android.view.View
+import android.widget.TextView
+import android.widget.Toast
+import com.roman.androidscrumboard.models.User
+import com.roman.androidscrumboard.models.UserLocalStore
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,6 +37,14 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_tools), drawerLayout)
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        val user: User? = intent.extras?.getParcelable("user")
+        val navigationView: NavigationView = findViewById(R.id.nav_view)
+        val navHeaderView: View = navigationView.getHeaderView(0)
+        val userNameTV: TextView = navHeaderView.findViewById(R.id.nav_header_user_name)
+        val eMailTV: TextView = navHeaderView.findViewById(R.id.nav_header_e_mail)
+        userNameTV.text = user?.userName
+        eMailTV.text = user?.eMail
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

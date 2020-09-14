@@ -9,11 +9,10 @@ import androidx.lifecycle.Observer
 import com.roman.androidscrumboard.MainActivity
 import com.roman.androidscrumboard.R
 import com.roman.androidscrumboard.models.User
+import com.roman.androidscrumboard.models.UserLocalStore
 import com.roman.androidscrumboard.ui.register.RegisterActivity
 
 class LogInActivity : AppCompatActivity() {
-
-    private val logInViewModel = LogInViewModel()
 
     //declare views
     private lateinit var userNameET: EditText
@@ -27,6 +26,8 @@ class LogInActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_in)
 
+        val logInViewModel = LogInViewModel(application)
+
         //initialize views
         userNameET = findViewById(R.id.log_in_user_name_edit_text)
         passwordET = findViewById(R.id.log_in_password_edit_text)
@@ -34,6 +35,8 @@ class LogInActivity : AppCompatActivity() {
         btnSignUp = findViewById(R.id.log_in_to_register_button)
         progressBar = findViewById(R.id.log_in_progress_bar)
         imageView = findViewById(R.id.log_in_image)
+
+        logInViewModel.loggedIn()
 
         //to register activity
         btnSignUp.setOnClickListener {
@@ -54,10 +57,10 @@ class LogInActivity : AppCompatActivity() {
                     is LogInState.SendingState -> {
                         sendingStateFun()
                     }
-                    is LogInState.SuccessState<*> -> {
+                    is LogInState.SuccessState -> {
                         successStateFun(state.user)
                     }
-                    is LogInState.ErrorState<*> -> {
+                    is LogInState.ErrorState -> {
                         errorStateFun(state.message)
                     }
                 }
@@ -77,20 +80,16 @@ class LogInActivity : AppCompatActivity() {
         btnLogIn.isEnabled = false
     }
 
-    private fun successStateFun(user: Any?) {
-        if (user is User) {
-            //Toast.makeText(this, user.userName, Toast.LENGTH_LONG).show()
-            //send user
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
+    private fun successStateFun(user: User?) {
+        //send user
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("user", user)
+        startActivity(intent)
+        finish()
     }
 
-    private fun errorStateFun(message: Any?) {
-        if (message is String) {
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-        }
+    private fun errorStateFun(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
         imageView.visibility = View.VISIBLE
         progressBar.visibility = View.INVISIBLE
         userNameET.isEnabled = true
